@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* You can add global styles below */
-/* body {
-  @apply bg-white text-gray-900;
-} */
+html {
+  scroll-behavior: smooth;
+}

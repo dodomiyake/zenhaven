@@ -1,43 +1,62 @@
 "use client";
 
 import Link from "next/link";
+import { ShoppingCart, User, Heart, Menu, X } from "lucide-react";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
 
 export default function Navbar() {
-    const [isOpen, setIsOpen] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
 
     return (
-        <nav className="bg-white border-b shadow-sm">
-            <div className="max-w-dvw mx-auto px-8 py-5 flex justify-between items-center">
-                <Link href="/" className="text-2xl font-bold text-blue-600">
+        <header className="bg-white border-b shadow-sm">
+            <div className="max-w-screen mx-auto px-6 lg:px-20 py-4 flex justify-between items-center">
+                {/* Logo */}
+                <Link href="/" className="text-2xl font-bold text-gray-700">
                     ZenHaven
                 </Link>
 
                 {/* Desktop Links */}
-                <div className="hidden md:flex space-x-6 text-sm font-medium text-gray-700">
-                    <Link href="/products" className="hover:text-blue-600">Products</Link>
-                    <Link href="/cart" className="hover:text-blue-600">Cart</Link>
-                    <Link href="/profile" className="hover:text-blue-600">Profile</Link>
-                </div>
+                <nav className="hidden md:flex gap-6 text-sm text-gray-700 font-medium">
+                    <Link href="/">Home</Link>
+                    <Link href="/products">Shop</Link>
+                    <Link href="/about">About</Link>
+                    <Link href="/contact">Contact</Link>
+                </nav>
 
-                {/* Mobile Menu Icon */}
-                <button
-                    onClick={() => setIsOpen(!isOpen)}
-                    className="md:hidden focus:outline-none"
-                >
-                    {isOpen ? <X size={24} /> : <Menu size={24} />}
-                </button>
+                {/* Icons */}
+                <div className="flex gap-4 items-center text-gray-700">
+                    <User size={20} className="cursor-pointer" />
+                    <Heart size={20} className="cursor-pointer" />
+                    <ShoppingCart size={20} className="cursor-pointer" />
+
+                    {/* Mobile Menu Icon */}
+                    <button
+                        className="md:hidden ml-2"
+                        onClick={() => setMenuOpen(!menuOpen)}
+                        aria-label="Toggle menu"
+                    >
+                        {menuOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+                </div>
             </div>
 
-            {/* Mobile Menu Links */}
-            {isOpen && (
-                <div className="md:hidden px-4 pb-4 space-y-3 text-sm font-medium text-gray-700">
-                    <Link href="/products" className="block hover:text-blue-600" onClick={() => setIsOpen(false)}>Products</Link>
-                    <Link href="/cart" className="block hover:text-blue-600" onClick={() => setIsOpen(false)}>Cart</Link>
-                    <Link href="/profile" className="block hover:text-blue-600" onClick={() => setIsOpen(false)}>Profile</Link>
+            {/* Mobile Links Dropdown */}
+            {menuOpen && (
+                <div className="md:hidden px-6 pt-2 pb-4 text-sm font-medium text-gray-700 space-y-3 bg-white shadow">
+                    <Link href="/" className="block" onClick={() => setMenuOpen(false)}>
+                        Home
+                    </Link>
+                    <Link href="/products" className="block" onClick={() => setMenuOpen(false)}>
+                        Shop
+                    </Link>
+                    <Link href="/about" className="block" onClick={() => setMenuOpen(false)}>
+                        About
+                    </Link>
+                    <Link href="/contact" className="block" onClick={() => setMenuOpen(false)}>
+                        Contact
+                    </Link>
                 </div>
             )}
-        </nav>
+        </header>
     );
 }
