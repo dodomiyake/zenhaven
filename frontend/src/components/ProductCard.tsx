@@ -21,7 +21,7 @@ export default function ProductCard({ title, price, image }: ProductProps) {
             </div>
             <h3 className="text-lg font-semibold text-gray-800 mb-2">{title}</h3>
             <p className="text-gray-800 font-bold text-sm mb-4">{price}</p>
-            <button className="w-full bg-gray-700 text-white py-2 rounded hover:bg-black transition text-sm">
+            <button className="w-full bg-gray-800 text-white py-2 rounded hover:bg-black transition text-sm">
                 Add to Cart
             </button>
         </div>
