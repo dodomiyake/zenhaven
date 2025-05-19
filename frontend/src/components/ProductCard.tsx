@@ -1,27 +1,38 @@
+// src/components/ProductCard.tsx
 "use client";
 
 import Image from "next/image";
+import { useCartStore } from "@/store/cartStore";
 
-interface ProductProps {
+interface Product {
+    _id: string;
     title: string;
     price: string;
     image: string;
 }
 
-export default function ProductCard({ title, price, image }: ProductProps) {
+export default function ProductCard({ product }: { product: Product }) {
+    const addToCart = useCartStore((state) => state.addToCart);
+    
+
     return (
-        <div className="bg-white rounded-lg shadow hover:shadow-md transition p-4">
-            <div className="relative w-full h-48 mb-4">
-                <Image
-                    src={image}
-                    alt={title}
-                    fill
-                    className="object-cover rounded-md"
-                />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">{title}</h3>
-            <p className="text-gray-800 font-bold text-sm mb-4">{price}</p>
-            <button className="w-full bg-gray-800 text-white py-2 rounded hover:bg-black transition text-sm">
+        <div className="border rounded-md shadow p-4 flex flex-col items-center">
+            <Image
+                src={product.image}
+                alt={product.title}
+                width={300}
+                height={300}
+                className="w-full h-60 object-cover rounded"
+            />
+            <h3 className="text-lg font-semibold mt-2">{product.title}</h3>
+            <p className="text-gray-700 mb-2">{product.price}</p>
+            <button
+                onClick={() => {
+                    addToCart(product);
+                    alert(`${product.title} added to cart!`);
+                }}
+                className="w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-700 transition"
+            >
                 Add to Cart
             </button>
         </div>

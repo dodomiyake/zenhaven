@@ -25,9 +25,12 @@ export default function Navbar() {
 
                 {/* Icons */}
                 <div className="flex gap-4 items-center text-gray-700">
-                    <User size={20} className="cursor-pointer" />
+                    {/* ✅ Wrap Cart Icon with Link */}
+                    <Link href="/cart">
+                        <ShoppingCart size={20} className="cursor-pointer" />
+                    </Link>
                     <Heart size={20} className="cursor-pointer" />
-                    <ShoppingCart size={20} className="cursor-pointer" />
+                    <User size={20} className="cursor-pointer" />
 
                     {/* Mobile Menu Icon */}
                     <button
@@ -55,6 +58,9 @@ export default function Navbar() {
                     <Link href="/contact" className="block" onClick={() => setMenuOpen(false)}>
                         Contact
                     </Link>
+                    <Link href="/cart" className="block" onClick={() => setMenuOpen(false)}>
+                        Cart
+                    </Link> {/* ✅ NEW */}
                 </div>
             )}
         </header>
