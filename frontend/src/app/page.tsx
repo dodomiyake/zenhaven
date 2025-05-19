@@ -1,58 +1,26 @@
+"use client";
+
 import Image from "next/image";
 import ProductCard from "@/components/ProductCard";
+import { useEffect, useState } from "react";
 
 export default function Home() {
 
-  const featuredProducts = [
-    {
-      _id: "1",
-      title: "Smart Watch",
-      price: "$199.00",
-      image: "/products/watch.jpg",
-    },
-    {
-      _id: "2",
-      title: "Modern Chair",
-      price: "$249.00",
-      image: "/products/chair.jpg",
-    },
-    {
-      _id: "3",
-      title: "Bluetooth Speaker",
-      price: "$99.00",
-      image: "/products/speaker.jpg",
-    },
-    {
-      _id: "4",
-      title: "Aroma Diffuser",
-      price: "$39.00",
-      image: "/products/diffuser.jpg",
-    },
-    {
-      _id: "5",
-      title: "Smart Watch",
-      price: "$199.00",
-      image: "/products/watch.jpg",
-    },
-    {
-      _id: "6",
-      title: "Modern Chair",
-      price: "$249.00",
-      image: "/products/chair.jpg",
-    },
-    {
-      _id: "7",
-      title: "Bluetooth Speaker",
-      price: "$99.00",
-      image: "/products/speaker.jpg",
-    },
-    {
-      _id: "8",
-      title: "Aroma Diffuser",
-      price: "$39.00",
-      image: "/products/diffuser.jpg",
-    },
-  ];
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch("/api/products");
+        const data = await res.json();
+        setFeaturedProducts(data.slice(0, 8)); // Limit to first 8 items for "Featured"
+      } catch (error) {
+        console.error("Failed to fetch featured products:", error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
 
   return (
@@ -101,9 +69,8 @@ export default function Home() {
             Featured Products
           </h2>
           <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {featuredProducts.map((product, index) => (
-              <ProductCard key={index} product={product} />
-
+            {featuredProducts.map((product) => (
+              <ProductCard key={product._id} product={product} />
             ))}
           </div>
         </div>

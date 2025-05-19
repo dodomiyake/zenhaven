@@ -3,9 +3,15 @@
 import Link from "next/link";
 import { ShoppingCart, User, Heart, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { useCartStore } from "@/store/cartStore";
+
 
 export default function Navbar() {
     const [menuOpen, setMenuOpen] = useState(false);
+
+    const cart = useCartStore((state) => state.cart);
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
 
     return (
         <header className="bg-white border-b shadow-sm">
@@ -24,10 +30,17 @@ export default function Navbar() {
                 </nav>
 
                 {/* Icons */}
-                <div className="flex gap-4 items-center text-gray-700">
+                <div className="flex gap-8 items-center text-gray-700">
                     {/* ✅ Wrap Cart Icon with Link */}
                     <Link href="/cart">
-                        <ShoppingCart size={20} className="cursor-pointer" />
+                        <div className="relative">
+                            <ShoppingCart size={20} className="cursor-pointer" />
+                            {totalItems > 0 && (
+                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                                    {totalItems}
+                                </span>
+                            )}
+                        </div>
                     </Link>
                     <Heart size={20} className="cursor-pointer" />
                     <User size={20} className="cursor-pointer" />

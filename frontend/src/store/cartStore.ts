@@ -22,7 +22,6 @@ export const useCartStore = create<CartStore>()(
     persist(
         (set, get) => ({
             cart: [],
-
             addToCart: (product) => {
                 const existing = get().cart.find((item) => item._id === product._id);
                 if (existing) {
@@ -34,20 +33,24 @@ export const useCartStore = create<CartStore>()(
                         ),
                     });
                 } else {
-                    set({
-                        cart: [...get().cart, { ...product, quantity: 1 }],
-                    });
+                    set({ cart: [...get().cart, { ...product, quantity: 1 }] });
                 }
             },
-
             removeFromCart: (id) => {
                 set({ cart: get().cart.filter((item) => item._id !== id) });
             },
-
             clearCart: () => set({ cart: [] }),
+            updateQuantity: (id, quantity) => {
+                set({
+                    cart: get().cart.map((item) =>
+                        item._id === id ? { ...item, quantity } : item
+                    ),
+                });
+            },
         }),
         {
-            name: "cart-storage", // key in localStorage
+            name: "cart-storage",
         }
     )
 );
+
