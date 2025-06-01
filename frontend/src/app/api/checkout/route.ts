@@ -1,83 +1,103 @@
 import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
-
-if (!process.env.STRIPE_SECRET_KEY) {
-    throw new Error('STRIPE_SECRET_KEY is not defined');
-}
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: '2023-10-16', // Use the latest API version
-});
+import { stripe } from '@/lib/stripe';
+import { CartItem } from '@/types/cart';
 
 export async function POST(request: Request) {
     try {
-        const body = await request.json();
-        const { items, discount, couponCode } = body;
+        const { cartItems, customerEmail } = await request.json();
 
-        // Calculate total amount including discount
-        const subtotal = items.reduce((sum: number, item: any) => 
-            sum + (item.price * item.quantity), 0
-        );
-        const discountAmount = subtotal * (discount || 0);
-        const total = subtotal - discountAmount;
+        if (!cartItems?.length) {
+            return NextResponse.json(
+                { error: 'No items in cart' },
+                { status: 400 }
+            );
+        }
+
+        // Validate image URLs
+        const validateImageUrl = (url: string) => {
+            try {
+                new URL(url);
+                return true;
+            } catch {
+                return false;
+            }
+        };
 
         // Create Stripe checkout session
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
-            mode: 'payment',
-            line_items: items.map((item: any) => ({
+            line_items: cartItems.map((item: CartItem) => ({
                 price_data: {
                     currency: 'usd',
                     product_data: {
                         name: item.name,
-                        images: [item.image], // Add product image to Stripe checkout
+                        description: item.description,
+                        images: item.images?.filter(validateImageUrl) || [],
                     },
-                    unit_amount: Math.round(item.price * 100), // Convert to cents
+                    unit_amount: Math.round(item.price * 100), // Convert to cents and ensure integer
                 },
                 quantity: item.quantity,
             })),
-            discounts: discount ? [
-                {
-                    coupon: await createOrRetrieveCoupon(couponCode, discount),
-                }
-            ] : [],
+            mode: 'payment',
             success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/cart`,
+            customer_email: customerEmail,
             metadata: {
-                couponCode: couponCode || '',
-                discountApplied: discount || 0,
+                status: 'pending', // Initial order status
             },
+            shipping_address_collection: {
+                allowed_countries: ['US', 'CA', 'GB'], // Add more countries as needed
+            },
+            shipping_options: [
+                {
+                    shipping_rate_data: {
+                        type: 'fixed_amount',
+                        fixed_amount: {
+                            amount: 0,
+                            currency: 'usd',
+                        },
+                        display_name: 'Free shipping',
+                        delivery_estimate: {
+                            minimum: {
+                                unit: 'business_day',
+                                value: 5,
+                            },
+                            maximum: {
+                                unit: 'business_day',
+                                value: 7,
+                            },
+                        },
+                    },
+                },
+                {
+                    shipping_rate_data: {
+                        type: 'fixed_amount',
+                        fixed_amount: {
+                            amount: 1500,
+                            currency: 'usd',
+                        },
+                        display_name: 'Express shipping',
+                        delivery_estimate: {
+                            minimum: {
+                                unit: 'business_day',
+                                value: 2,
+                            },
+                            maximum: {
+                                unit: 'business_day',
+                                value: 3,
+                            },
+                        },
+                    },
+                },
+            ],
         });
 
-        return NextResponse.json({ 
-            checkoutUrl: session.url,
-            sessionId: session.id
-        });
-
+        return NextResponse.json({ sessionId: session.id });
     } catch (error: any) {
-        console.error('Checkout error:', error);
+        console.error('Error creating checkout session:', error);
         return NextResponse.json(
-            { message: error.message || 'Internal server error' },
+            { error: error.message || 'Error creating checkout session' },
             { status: 500 }
         );
-    }
-}
-
-// Helper function to create or retrieve a Stripe coupon
-async function createOrRetrieveCoupon(code: string, discountAmount: number) {
-    if (!code) return null;
-
-    try {
-        // Try to retrieve existing coupon
-        const existingCoupon = await stripe.coupons.retrieve(code);
-        return existingCoupon.id;
-    } catch (error) {
-        // If coupon doesn't exist, create a new one
-        const newCoupon = await stripe.coupons.create({
-            id: code,
-            percent_off: discountAmount * 100, // Convert decimal to percentage
-            duration: 'once',
-        });
-        return newCoupon.id;
     }
 } 

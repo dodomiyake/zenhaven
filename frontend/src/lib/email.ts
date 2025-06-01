@@ -18,22 +18,27 @@ interface OrderDetails {
     amount: number;
     createdAt: string;
     items: OrderItem[];
+    shippingAddress?: {
+        line1?: string;
+        line2?: string;
+        city?: string;
+        state?: string;
+        postal_code?: string;
+        country?: string;
+    };
 }
 
-const formatPrice = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2
-    }).format(amount / 100);
-};
+// Helper function to format price
+function formatPrice(amount: number): string {
+    return `$${(amount / 100).toFixed(2)}`;
+}
 
 // Helper function to validate image URL
 function isValidImageUrl(url: string | undefined): boolean {
     if (!url) return false;
     try {
-        new URL(url); // This will throw if the URL is invalid
-        return true;
+        const parsedUrl = new URL(url);
+        return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
     } catch {
         return false;
     }
@@ -48,7 +53,7 @@ export async function sendOrderConfirmation(
     console.log('📧 Order details:', orderDetails);
 
     try {
-        const { orderNumber, amount, items, createdAt } = orderDetails;
+        const { orderNumber, amount, items, createdAt, shippingAddress } = orderDetails;
         
         console.log('📧 Preparing email content');
         const emailContent = `
@@ -68,20 +73,20 @@ export async function sendOrderConfirmation(
                 
                 <div style="background-color: #f8f8f8; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
                     <h2 style="color: #333; margin: 0 0 20px 0; font-size: 20px;">Order Summary</h2>
-                    
                     ${items.map(item => {
                         const unitPrice = formatPrice(item.price);
-                        const itemTotal = item.price * item.quantity;
+                        const itemTotal = formatPrice(item.price * item.quantity);
                         const hasValidImage = item.image && isValidImageUrl(item.image);
                         
                         return `
-                            <div style="margin-bottom: 25px; display: flex; align-items: center;">
+                            <div style="display: flex; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 20px;">
                                 ${hasValidImage ? `
-                                    <div style="margin-right: 15px; flex-shrink: 0;">
-                                        <img src="${item.image}" 
-                                             alt="${item.name}" 
-                                             style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px;"
-                                             onerror="this.style.display='none'"
+                                    <div style="flex-shrink: 0; margin-right: 15px;">
+                                        <img src="${item.image}"
+                                             alt="${item.name}"
+                                             width="80"
+                                             height="80"
+                                             style="object-fit: cover; border-radius: 4px;"
                                         />
                                     </div>
                                 ` : ''}
@@ -92,18 +97,18 @@ export async function sendOrderConfirmation(
                                     <div style="color: #666; font-size: 14px;">
                                         <span>${unitPrice} × ${item.quantity}</span>
                                         <span style="margin: 0 15px; color: #999;">-</span>
-                                        <span style="color: #333;">${formatPrice(itemTotal)}</span>
+                                        <span style="float: right; color: #333; font-weight: 500;">${itemTotal}</span>
                                     </div>
                                 </div>
                             </div>
                         `;
                     }).join('')}
                     
-                    <div style="margin-top: 30px; border-top: 1px solid #000; padding-top: 15px;">
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="font-weight: bold; color: #333; font-size: 16px;">Total</span>
+                    <div style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #eee;">
+                        <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                            <span style="color: #333; font-size: 16px;">Total</span>
                             <span style="margin: 0 15px; color: #999;">-</span>
-                            <span style="font-weight: bold; color: #333; font-size: 16px;">${formatPrice(amount)}</span>
+                            <span style="color: #333; font-size: 16px;">${formatPrice(amount)}</span>
                         </div>
                     </div>
                 </div>

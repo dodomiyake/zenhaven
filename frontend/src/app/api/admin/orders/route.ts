@@ -22,7 +22,7 @@ function formatOrder(session: Stripe.Checkout.Session) {
 
 // Middleware to check admin authentication
 async function checkAuth(request: Request) {
-    const headersList = headers();
+    const headersList = await headers();
     const isAdmin = headersList.get('x-admin-token') === process.env.ADMIN_SECRET_KEY;
     
     if (!isAdmin) {

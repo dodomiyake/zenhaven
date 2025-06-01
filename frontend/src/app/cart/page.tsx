@@ -7,6 +7,7 @@ import { Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { loadStripe } from "@stripe/stripe-js";
 
 // Define proper types
 interface CartItem {
@@ -27,6 +28,10 @@ export default function CartPage() {
     const { couponCode, discount, setCoupon, clearCoupon } = useCouponStore();
     const [inputCouponCode, setInputCouponCode] = useState(couponCode);
     const [isLoading, setIsLoading] = useState(false);
+
+    // Add email state
+    const [email, setEmail] = useState('');
+    const [emailError, setEmailError] = useState('');
 
     // Sync input with stored coupon on mount
     useEffect(() => {
@@ -84,34 +89,72 @@ export default function CartPage() {
         toast.success(`${title} quantity updated`);
     };
 
+    // Email validation function
+    const validateEmail = (email: string) => {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email) {
+            setEmailError('Email is required');
+            return false;
+        }
+        if (!re.test(email)) {
+            setEmailError('Please enter a valid email address');
+            return false;
+        }
+        setEmailError('');
+        return true;
+    };
+
     const handleCheckout = async () => {
+        // Validate email before proceeding
+        if (!validateEmail(email)) {
+            toast.error('Please enter a valid email address');
+            return;
+        }
+
         try {
             setIsLoading(true);
+
+            // Helper function to ensure absolute URLs
+            const getAbsoluteImageUrl = (imageUrl: string) => {
+                if (imageUrl.startsWith('http')) return imageUrl;
+                // If it's a relative URL, convert to absolute
+                const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || window.location.origin;
+                return new URL(imageUrl, baseUrl).toString();
+            };
+
             const response = await fetch('/api/checkout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    items: cart.map(item => ({
+                    cartItems: cart.map(item => ({
                         id: item._id,
-                        quantity: item.quantity,
+                        name: item.title,
+                        description: item.title,
                         price: parseFloat(item.price.replace(/[^0-9.]/g, "")),
-                        name: item.title
+                        quantity: item.quantity,
+                        images: item.image ? [getAbsoluteImageUrl(item.image)] : []
                     })),
-                    discount: discount,
-                    couponCode: couponCode
+                    customerEmail: email.trim(),
                 }),
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || 'Something went wrong');
+                throw new Error(data.error || 'Something went wrong');
             }
 
-            // Redirect to stripe payment page
-            window.location.href = data.checkoutUrl;
+            // Redirect to stripe payment page using the session ID
+            const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+            if (!stripe) throw new Error('Failed to load Stripe');
+
+            const { error } = await stripe.redirectToCheckout({
+                sessionId: data.sessionId
+            });
+
+            if (error) throw error;
 
         } catch (error) {
             console.error('Checkout error:', error);
@@ -334,6 +377,28 @@ export default function CartPage() {
                                     </motion.span>
                                 </motion.p>
                             </motion.div>
+
+                            <div className="mt-6 max-w-sm ml-auto">
+                                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Email Address
+                                </label>
+                                <input
+                                    id="email"
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => {
+                                        setEmail(e.target.value);
+                                        if (emailError) validateEmail(e.target.value);
+                                    }}
+                                    placeholder="Enter your email"
+                                    className={`w-full border rounded px-3 py-2 text-sm ${
+                                        emailError ? 'border-red-500' : 'border-gray-300'
+                                    } focus:outline-none focus:ring-1 focus:ring-black`}
+                                />
+                                {emailError && (
+                                    <p className="mt-1 text-sm text-red-500">{emailError}</p>
+                                )}
+                            </div>
 
                             <div className="text-right mt-4">
                                 <div className="flex justify-end gap-4">

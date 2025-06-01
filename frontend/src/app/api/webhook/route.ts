@@ -68,10 +68,13 @@ export async function POST(req: Request) {
                         break;
                     }
 
+                    // Get full session details with customer information
+                    const checkoutSession = await stripe.checkout.sessions.retrieve(session.id);
+
                     // Prepare order details
                     const orderDetails = {
-                        orderNumber: session.payment_intent as string,
-                        amount: session.amount_total as number,
+                        orderNumber: checkoutSession.payment_intent as string,
+                        amount: checkoutSession.amount_total as number,
                         createdAt: new Date().toISOString(),
                         items: lineItems.data.map(item => {
                             const product = item.price?.product as Stripe.Product;
@@ -82,6 +85,14 @@ export async function POST(req: Request) {
                                 image: getAbsoluteImageUrl(product?.images?.[0]) // Convert to absolute URL
                             };
                         }),
+                        shippingAddress: {
+                            line1: checkoutSession.customer_details?.address?.line1 || '',
+                            line2: checkoutSession.customer_details?.address?.line2 || '',
+                            city: checkoutSession.customer_details?.address?.city || '',
+                            state: checkoutSession.customer_details?.address?.state || '',
+                            postal_code: checkoutSession.customer_details?.address?.postal_code || '',
+                            country: checkoutSession.customer_details?.address?.country || ''
+                        }
                     };
 
                     // Log complete session and order details for debugging
