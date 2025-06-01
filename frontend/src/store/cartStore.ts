@@ -16,6 +16,7 @@ type CartStore = {
     addToCart: (product: Product) => void;
     removeFromCart: (id: string) => void;
     clearCart: () => void;
+    updateQuantity: (id: string, quantity: number) => void;
 };
 
 export const useCartStore = create<CartStore>()(
