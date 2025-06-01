@@ -2,44 +2,74 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Package, Calendar, DollarSign, Clock } from 'lucide-react';
+import { Package, Calendar, DollarSign, Clock, Mail } from 'lucide-react';
 
 interface Order {
     orderNumber: string;
     amount: number;
     status: string;
     createdAt: string;
-    items: Array<{
-        name: string;
-        quantity: number;
-        price: number;
-    }>;
+    customerEmail: string;
+    metadata: Record<string, string>;
+}
+
+interface OrdersResponse {
+    orders: Order[];
+    has_more: boolean;
+    next_page: number | null;
+    next_cursor: string | null;
+    message?: string;
+    error?: string;
 }
 
 export default function OrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [nextCursor, setNextCursor] = useState<string | null>(null);
+    const [hasMore, setHasMore] = useState(false);
+
+    const fetchOrders = async (cursor?: string) => {
+        try {
+            const url = new URL('/api/orders', window.location.origin);
+            if (cursor) {
+                url.searchParams.set('starting_after', cursor);
+            }
+            url.searchParams.set('limit', '10');
+
+            const response = await fetch(url.toString());
+            const data: OrdersResponse = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to fetch orders');
+            }
+
+            if (cursor) {
+                setOrders(prev => [...prev, ...data.orders]);
+            } else {
+                setOrders(data.orders);
+            }
+            
+            setHasMore(data.has_more);
+            setNextCursor(data.next_cursor);
+            setError(null);
+        } catch (err: any) {
+            setError(err.message);
+            console.error('Error fetching orders:', err);
+        } finally {
+            setIsLoading(false);
+            setIsLoadingMore(false);
+        }
+    };
+
+    const loadMore = async () => {
+        if (!nextCursor || isLoadingMore) return;
+        setIsLoadingMore(true);
+        await fetchOrders(nextCursor);
+    };
 
     useEffect(() => {
-        const fetchOrders = async () => {
-            try {
-                const response = await fetch('/api/orders');
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.message || 'Failed to fetch orders');
-                }
-
-                setOrders(data.orders);
-            } catch (err: any) {
-                setError(err.message);
-                console.error('Error fetching orders:', err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
         fetchOrders();
     }, []);
 
@@ -65,7 +95,10 @@ export default function OrdersPage() {
                     <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => window.location.reload()}
+                        onClick={() => {
+                            setIsLoading(true);
+                            fetchOrders();
+                        }}
                         className="bg-black text-white px-6 py-3 rounded w-full hover:bg-gray-800 transition"
                     >
                         Try Again
@@ -121,7 +154,7 @@ export default function OrdersPage() {
                                         </h2>
                                     </div>
                                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                        order.status === 'completed' 
+                                        order.status === 'succeeded' 
                                             ? 'bg-green-100 text-green-800'
                                             : 'bg-blue-100 text-blue-800'
                                     }`}>
@@ -129,7 +162,7 @@ export default function OrdersPage() {
                                     </span>
                                 </div>
                                 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4">
                                     <div className="flex items-center gap-2">
                                         <Calendar className="text-gray-400" size={16} />
                                         <span className="text-sm text-gray-600">
@@ -148,31 +181,50 @@ export default function OrdersPage() {
                                             {new Date(order.createdAt).toLocaleTimeString()}
                                         </span>
                                     </div>
+                                    {order.customerEmail && (
+                                        <div className="flex items-center gap-2">
+                                            <Mail className="text-gray-400" size={16} />
+                                            <span className="text-sm text-gray-600 truncate">
+                                                {order.customerEmail}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
 
-                                <div className="mt-4 border-t pt-4">
-                                    <h3 className="text-sm font-medium text-gray-900 mb-2">
-                                        Items
-                                    </h3>
-                                    <div className="space-y-2">
-                                        {order.items.map((item, index) => (
-                                            <div 
-                                                key={index}
-                                                className="flex justify-between text-sm"
-                                            >
-                                                <span className="text-gray-600">
-                                                    {item.quantity}x {item.name}
-                                                </span>
-                                                <span className="text-gray-900 font-medium">
-                                                    ${(item.price * item.quantity / 100).toFixed(2)}
-                                                </span>
-                                            </div>
-                                        ))}
+                                {order.metadata && Object.keys(order.metadata).length > 0 && (
+                                    <div className="mt-4 pt-4 border-t border-gray-200">
+                                        <h3 className="text-sm font-medium text-gray-900 mb-2">
+                                            Additional Information
+                                        </h3>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {Object.entries(order.metadata).map(([key, value]) => (
+                                                <div key={key} className="text-sm">
+                                                    <span className="text-gray-500">{key}: </span>
+                                                    <span className="text-gray-900">{value}</span>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
+                                )}
                             </div>
                         </motion.div>
                     ))}
+
+                    {hasMore && (
+                        <div className="text-center mt-8">
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={loadMore}
+                                disabled={isLoadingMore}
+                                className={`bg-black text-white px-6 py-3 rounded hover:bg-gray-800 transition ${
+                                    isLoadingMore ? 'opacity-50 cursor-not-allowed' : ''
+                                }`}
+                            >
+                                {isLoadingMore ? 'Loading...' : 'Load More Orders'}
+                            </motion.button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
