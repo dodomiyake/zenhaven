@@ -21,7 +21,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             try {
                 const isAdmin = localStorage.getItem('isAdmin') === 'true';
                 setIsAuthenticated(isAdmin);
-                
+
                 // If not authenticated and not on login page, redirect to login
                 if (!isAdmin && pathname !== '/admin/login') {
                     router.push('/admin/login');
@@ -74,30 +74,38 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                         {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
                     </button>
                 </div>
-                
+
                 <nav className="mt-8">
-                    <Link 
-                        href="/admin/orders" 
+                    <Link
+                        href="/admin/products"
+                        className="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-colors"
+                    >
+                        <Package size={20} />
+                        {sidebarOpen && <span className="ml-4">Products</span>}
+                    </Link>
+                    <Link
+                        href="/admin/orders"
                         className="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-colors"
                     >
                         <Package size={20} />
                         {sidebarOpen && <span className="ml-4">Orders</span>}
                     </Link>
-                    <Link 
-                        href="/admin/settings" 
+
+                    <Link
+                        href="/admin/settings"
                         className="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-colors"
                     >
                         <Settings size={20} />
                         {sidebarOpen && <span className="ml-4">Settings</span>}
                     </Link>
-                    <Link 
-                        href="/admin/customers" 
+                    <Link
+                        href="/admin/customers"
                         className="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-colors"
                     >
                         <Users size={20} />
                         {sidebarOpen && <span className="ml-4">Customers</span>}
                     </Link>
-                    <button 
+                    <button
                         onClick={handleLogout}
                         className="w-full flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-colors"
                     >

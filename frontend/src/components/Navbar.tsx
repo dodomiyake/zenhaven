@@ -1,17 +1,41 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingCart, User, Heart, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { ShoppingCart, User, Heart, Menu, X, LogOut } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { useCartStore } from "@/store/cartStore";
+import { useAuth } from "@/components/AuthContext";
 
+interface UserInfo {
+    name: string;
+    email: string;
+    avatar?: string;
+}
 
 export default function Navbar() {
     const [menuOpen, setMenuOpen] = useState(false);
-
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const avatarRef = useRef<HTMLDivElement>(null);
+    const { user, loading, logout } = useAuth();
     const cart = useCartStore((state) => state.cart);
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
+    // Close dropdown on outside click
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (avatarRef.current && !avatarRef.current.contains(event.target as Node)) {
+                setDropdownOpen(false);
+            }
+        }
+        if (dropdownOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+        } else {
+            document.removeEventListener("mousedown", handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [dropdownOpen]);
 
     return (
         <header className="bg-white border-b shadow-sm">
@@ -29,9 +53,9 @@ export default function Navbar() {
                     <Link href="/contact">Contact</Link>
                 </nav>
 
-                {/* Icons */}
+                {/* Icons & Auth */}
                 <div className="flex gap-8 items-center text-gray-700">
-                    {/* ✅ Wrap Cart Icon with Link */}
+                    {/* Cart Icon */}
                     <Link href="/cart">
                         <div className="relative">
                             <ShoppingCart size={20} className="cursor-pointer" />
@@ -43,7 +67,42 @@ export default function Navbar() {
                         </div>
                     </Link>
                     <Heart size={20} className="cursor-pointer" />
-                    <User size={20} className="cursor-pointer" />
+
+                    {/* Auth Links/User Info */}
+                    {loading ? null : user ? (
+                        <div className="relative" ref={avatarRef}>
+                            <button
+                                className="flex items-center gap-2 focus:outline-none"
+                                onClick={() => setDropdownOpen((open) => !open)}
+                                aria-label="User menu"
+                            >
+                                {user.avatar ? (
+                                    <img src={user.avatar} alt="avatar" className="w-8 h-8 rounded-full object-cover border border-gray-300" />
+                                ) : (
+                                    <User size={24} className="rounded-full bg-gray-200 p-1" />
+                                )}
+                            </button>
+                            {dropdownOpen && (
+                                <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded shadow-lg z-50">
+                                    <div className="px-4 py-2 text-sm text-gray-700 border-b">{user.name}</div>
+                                    <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setDropdownOpen(false)}>
+                                        Profile
+                                    </Link>
+                                    <button
+                                        onClick={() => { setDropdownOpen(false); logout(); }}
+                                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                    >
+                                        Logout
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-4">
+                            <Link href="/auth/login" className="hover:underline">Login</Link>
+                            <Link href="/auth/register" className="hover:underline">Register</Link>
+                        </div>
+                    )}
 
                     {/* Mobile Menu Icon */}
                     <button
@@ -73,7 +132,16 @@ export default function Navbar() {
                     </Link>
                     <Link href="/cart" className="block" onClick={() => setMenuOpen(false)}>
                         Cart
-                    </Link> {/* ✅ NEW */}
+                    </Link>
+                    {/* Auth Links for Mobile */}
+                    {loading ? null : user ? (
+                        <button onClick={logout} className="block w-full text-left text-red-600 mt-2">Logout</button>
+                    ) : (
+                        <>
+                            <Link href="/auth/login" className="block" onClick={() => setMenuOpen(false)}>Login</Link>
+                            <Link href="/auth/register" className="block" onClick={() => setMenuOpen(false)}>Register</Link>
+                        </>
+                    )}
                 </div>
             )}
         </header>
