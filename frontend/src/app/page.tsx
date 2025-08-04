@@ -5,6 +5,7 @@ import ProductCard from "@/components/ProductCard";
 import { useEffect, useState, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { apiCall } from "@/utils/api";
 
 // Define Product type locally to avoid import issues
 type Product = {
@@ -29,7 +30,7 @@ export default function Home() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch("/api/products");
+        const res = await apiCall("/api/products");
         const data = await res.json();
         setFeaturedProducts(data.slice(0, 8)); // Limit to first 8 items for "Featured"
       } catch (error) {

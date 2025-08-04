@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ProductCard from "@/components/ProductCard";
+import { apiCall } from "@/utils/api";
 
 type Product = {
   _id: string;
@@ -18,7 +19,7 @@ export default function ProductsPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch("/api/products");
+        const res = await apiCall("/api/products");
         if (!res.ok) {
           throw new Error("Failed to fetch products");
         }

@@ -27,7 +27,8 @@ function SuccessPageContent() {
             }
 
             try {
-                const response = await fetch('/api/verify-payment', {
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+                const response = await fetch(`${apiUrl}/api/verify-payment`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

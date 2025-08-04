@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { apiCall } from "@/utils/api";
 
 export interface UserInfo {
   name: string;
@@ -27,7 +28,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const refreshUser = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/me", { credentials: "include" });
+      const res = await apiCall("/api/auth/me");
       if (res.ok) {
         const data = await res.json();
         setUser(data.user || null);
@@ -42,7 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
-    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    await apiCall("/api/auth/logout", { method: "POST" });
     setUser(null);
   };
 
