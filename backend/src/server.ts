@@ -2,8 +2,7 @@ import express, { Express, Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
-// import cookieParser from 'cookie-parser';
-const cookieParser = require('cookie-parser');
+import cookieParser from 'cookie-parser';
 
 // Load environment variables
 dotenv.config();
