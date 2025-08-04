@@ -22,8 +22,10 @@ mongoose_1.default.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017
     .catch(err => console.error('MongoDB connection error:', err));
 const auth_1 = __importDefault(require("./routes/auth"));
 const users_1 = __importDefault(require("./routes/users"));
+const verify_payment_1 = __importDefault(require("./routes/verify-payment"));
 app.use('/api/auth', auth_1.default);
 app.use('/api/users', users_1.default);
+app.use('/api', verify_payment_1.default);
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', message: 'ZenHaven API is running' });
 });

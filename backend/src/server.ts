@@ -26,9 +26,11 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/zenhaven'
 // Routes
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
+import verifyPaymentRoutes from './routes/verify-payment';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api', verifyPaymentRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req: Request, res: Response) => {
