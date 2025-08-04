@@ -6,6 +6,14 @@ import { useEffect, useState, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
+// Define Product type locally to avoid import issues
+type Product = {
+    _id: string;
+    title: string;
+    price: string;
+    image: string;
+};
+
 // Register ScrollTrigger plugin
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -37,26 +45,46 @@ export default function Home() {
     const tl = gsap.timeline();
     
     // Animate content elements
-    tl.fromTo(contentRef.current?.querySelector('.hero-badge'), 
-      { y: -50, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }
-    )
-    .fromTo(contentRef.current?.querySelector('.hero-title'), 
-      { y: 30, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }, "-=0.4"
-    )
-    .fromTo(contentRef.current?.querySelector('.hero-description'), 
-      { y: 30, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }, "-=0.4"
-    )
-    .fromTo(contentRef.current?.querySelector('.hero-buttons'), 
-      { y: 30, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }, "-=0.4"
-    )
-    .fromTo(contentRef.current?.querySelector('.hero-dots'), 
-      { scale: 0, opacity: 0 },
-      { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.7)", stagger: 0.1 }, "-=0.2"
-    );
+    const heroBadge = contentRef.current?.querySelector('.hero-badge');
+    const heroTitle = contentRef.current?.querySelector('.hero-title');
+    const heroDescription = contentRef.current?.querySelector('.hero-description');
+    const heroButtons = contentRef.current?.querySelector('.hero-buttons');
+    const heroDots = contentRef.current?.querySelector('.hero-dots');
+
+    if (heroBadge) {
+      tl.fromTo(heroBadge, 
+        { y: -50, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }
+      );
+    }
+    
+    if (heroTitle) {
+      tl.fromTo(heroTitle, 
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }, "-=0.4"
+      );
+    }
+    
+    if (heroDescription) {
+      tl.fromTo(heroDescription, 
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }, "-=0.4"
+      );
+    }
+    
+    if (heroButtons) {
+      tl.fromTo(heroButtons, 
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }, "-=0.4"
+      );
+    }
+    
+    if (heroDots) {
+      tl.fromTo(heroDots, 
+        { scale: 0, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.7)", stagger: 0.1 }, "-=0.2"
+      );
+    }
 
     // Floating elements animation
     if (floatingElementsRef.current) {
@@ -73,38 +101,45 @@ export default function Home() {
 
     // Products section animation
     if (productsRef.current) {
-      gsap.fromTo(productsRef.current.querySelector('.products-title'),
-        { y: 50, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 1,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: productsRef.current,
-            start: "top 80%",
-            end: "bottom 20%",
-            toggleActions: "play none none reverse"
+      const productsTitle = productsRef.current.querySelector('.products-title');
+      const productCards = productsRef.current.querySelectorAll('.product-card');
+      
+      if (productsTitle) {
+        gsap.fromTo(productsTitle,
+          { y: 50, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 1,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: productsRef.current,
+              start: "top 80%",
+              end: "bottom 20%",
+              toggleActions: "play none none reverse"
+            }
           }
-        }
-      );
+        );
+      }
 
-      gsap.fromTo(productsRef.current.querySelectorAll('.product-card'),
-        { y: 100, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.8,
-          ease: "power2.out",
-          stagger: 0.1,
-          scrollTrigger: {
-            trigger: productsRef.current,
-            start: "top 80%",
-            end: "bottom 20%",
-            toggleActions: "play none none reverse"
+      if (productCards.length > 0) {
+        gsap.fromTo(productCards,
+          { y: 100, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            ease: "power2.out",
+            stagger: 0.1,
+            scrollTrigger: {
+              trigger: productsRef.current,
+              start: "top 80%",
+              end: "bottom 20%",
+              toggleActions: "play none none reverse"
+            }
           }
-        }
-      );
+        );
+      }
     }
 
     return () => {

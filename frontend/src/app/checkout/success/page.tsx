@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCartStore } from '@/store/cartStore';
 import { useCouponStore } from '@/store/couponStore';
 import { CheckCircle, Package } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export default function SuccessPage() {
+function SuccessPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const clearCart = useCartStore(state => state.clearCart);
@@ -172,5 +172,20 @@ export default function SuccessPage() {
                 </motion.div>
             </motion.div>
         </div>
+    );
+}
+
+export default function SuccessPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-[calc(100vh-80px)] flex items-center justify-center bg-gray-50">
+                <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                    <p className="text-gray-600">Loading...</p>
+                </div>
+            </div>
+        }>
+            <SuccessPageContent />
+        </Suspense>
     );
 } 
