@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { Order } from './types';
 import OrderDetails from './OrderDetails';
-import { apiCall } from '@/utils/api';
 
 type SortField = 'orderNumber' | 'customerEmail' | 'amount' | 'createdAt' | 'status';
 type SortDirection = 'asc' | 'desc';
@@ -46,7 +45,7 @@ export default function OrdersPage() {
     const fetchOrders = async () => {
         try {
             const adminToken = localStorage.getItem('adminToken');
-            const response = await apiCall('/api/admin/orders', {
+            const response = await fetch('/api/admin/orders', {
                 headers: {
                     'x-admin-token': adminToken || ''
                 }
@@ -164,9 +163,10 @@ export default function OrdersPage() {
     const updateOrderStatus = async (orderId: string, newStatus: string) => {
         try {
             const adminToken = localStorage.getItem('adminToken');
-            const response = await apiCall(`/api/admin/orders?id=${orderId}`, {
+            const response = await fetch(`/api/admin/orders?id=${orderId}`, {
                 method: 'PATCH',
                 headers: {
+                    'Content-Type': 'application/json',
                     'x-admin-token': adminToken || ''
                 },
                 body: JSON.stringify({ status: newStatus }),

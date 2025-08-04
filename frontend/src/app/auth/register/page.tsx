@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiCall } from "@/utils/api";
 
 const CLOUDINARY_UPLOAD_PRESET = "your_upload_preset"; // Replace with your Cloudinary unsigned upload preset
 const CLOUDINARY_CLOUD_NAME = "your_cloud_name"; // Replace with your Cloudinary cloud name
@@ -84,8 +83,9 @@ export default function RegisterPage() {
         }
 
         try {
-            const res = await apiCall("/api/auth/register", {
+            const res = await fetch("/api/auth/register", {
                 method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ ...form, avatar: avatarUrl }),
             });
             const data = await res.json();

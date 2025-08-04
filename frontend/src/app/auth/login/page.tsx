@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthContext";
-import { apiCall } from "@/utils/api";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -24,9 +23,11 @@ export default function LoginPage() {
         setError(null);
         setSuccess(null);
         try {
-            const res = await apiCall("/api/auth/login", {
+            const res = await fetch("/api/auth/login", {
                 method: "POST",
-                body: JSON.stringify({ ...form, rememberMe })
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ...form, rememberMe }),
+                credentials: "include"
             });
             const data = await res.json();
             if (!res.ok) {

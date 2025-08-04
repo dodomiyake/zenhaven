@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle } from "lucide-react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { apiCall } from "@/utils/api";
 
 // Register ScrollTrigger plugin
 if (typeof window !== "undefined") {
@@ -141,8 +140,11 @@ export default function ContactPage() {
     setSubmitStatus("idle");
 
     try {
-      const response = await apiCall("/api/contact", {
+      const response = await fetch("/api/contact", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(formData),
       });
 

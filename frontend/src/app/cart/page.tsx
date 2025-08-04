@@ -8,7 +8,6 @@ import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { loadStripe } from "@stripe/stripe-js";
-import { apiCall } from "@/utils/api";
 
 // Define proper types
 interface CartItem {
@@ -123,8 +122,11 @@ export default function CartPage() {
                 return new URL(imageUrl, baseUrl).toString();
             };
 
-            const response = await apiCall('/api/checkout', {
+            const response = await fetch('/api/checkout', {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({
                     cartItems: cart.map(item => ({
                         id: item._id,
