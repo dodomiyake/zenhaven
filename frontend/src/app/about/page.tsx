@@ -102,7 +102,7 @@ export default function AboutPage() {
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">Passion</h3>
               <p className="text-gray-600">
-                We're passionate about creating beautiful spaces that bring joy to your home.
+                We&apos;re passionate about creating beautiful spaces that bring joy to your home.
               </p>
             </div>
           </div>
