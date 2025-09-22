@@ -27,8 +27,8 @@ export default function SuccessPage() {
             }
 
             try {
-                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-                const response = await fetch(`${apiUrl}/api/verify-payment`, {
+                // Use same-origin API, which is proxied to backend via Next rewrites
+                const response = await fetch(`/api/verify-payment`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

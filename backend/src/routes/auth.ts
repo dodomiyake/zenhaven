@@ -5,7 +5,10 @@ import { User, IUser } from '../models/User';
 import { auth, AuthRequest } from '../middleware/auth';
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET is not defined in environment variables');
+}
 const COOKIE_NAME = 'auth-token';
 
 // Generate JWT token

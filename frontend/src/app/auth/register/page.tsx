@@ -83,10 +83,18 @@ export default function RegisterPage() {
         }
 
         try {
+            const payload: any = { ...form };
+            if (avatarUrl) {
+                payload.avatar = avatarUrl;
+            } else {
+                delete payload.avatar;
+            }
+
             const res = await fetch("/api/auth/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...form, avatar: avatarUrl }),
+                credentials: "include",
+                body: JSON.stringify(payload),
             });
             const data = await res.json();
             if (!res.ok) {
